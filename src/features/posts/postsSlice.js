@@ -49,12 +49,13 @@ const postsSlice = createSlice({
        * @param {content of new post} content 
        * @returns {action payload with random id} action object  with payload field inside
        */
-      prepare(title, content) {
+      prepare(title, content, userId) {
         return {
           payload: {
             id: nanoid(),
             title,
             content,
+            user: userId
           }
         }
       }
