@@ -10,11 +10,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 // for generating random post id's
 import { nanoid } from '@reduxjs/toolkit';
+import { sub } from 'date-fns'
 
 // define initial posts array data
 const initialState = [
-  { id: '1', title: 'First Post!', content: 'Hello!' },
-  { id: '2', title: 'Second Post!', content: 'More text' }
+  { id: '1', title: 'First Post!', content: 'Hello!', date: sub(new Date(), { minutes: 10 }).toISOString() },
+  { id: '2', title: 'Second Post!', content: 'More text', date: sub(new Date(), { minutes: 5 }).toISOString() }
 ]
 
 // create a new redux slice for posts
@@ -55,7 +56,8 @@ const postsSlice = createSlice({
             id: nanoid(),
             title,
             content,
-            user: userId
+            user: userId,
+            date: new Date().toISOString(),
           }
         }
       }
