@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 // import link to link an excerpt to an individual post page
 import { Link } from 'react-router-dom';
 import { PostAuthor } from './PostAuthor';
+import { ReactionButtons } from './ReactionButtons';
 import { TimeAgo } from './TimeAgo';
 
 export const PostsList = () => {
@@ -19,6 +20,7 @@ export const PostsList = () => {
       <h3>{post.title}</h3>
         <PostAuthor userId={post.user} />
         <TimeAgo timestamp={post.date} />
+        <ReactionButtons post={post} />
       <p className='post-content'>{post.content.substring(0, 100)}</p>
       {/* links to an individual post page */}
       <Link to={`/posts/${post.id}`} className="button muted-button">
