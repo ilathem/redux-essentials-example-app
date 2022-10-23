@@ -6,12 +6,13 @@ import React, { useState } from 'react'
 // for modifying redux state
 import { useDispatch, useSelector } from 'react-redux'
 // for creating new posts
-import { postAdded } from './postsSlice'
+import { addNewPost } from './postsSlice'
 
 export const AddPostForm = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [userId, setUserId] = useState('')
+  const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
   // use the hook so that we can modify redux state
   const dispatch = useDispatch()
@@ -21,25 +22,26 @@ export const AddPostForm = () => {
   const onTitleChanged = (e) => setTitle(e.target.value)
   const onContentChanged = (e) => setContent(e.target.value)
   const onAuthorChanged = (e) => setUserId(e.target.value)
+  
+  const  canSave = 
+    [title, content, userId].every(Boolean) && addRequestStatus === 'idle'
 
-  const onSavePostClicked = () => {
-    if (title && content) {
-      // since we  added the prepare callback to accept 2 arguments, title and
-      // content don't have to be wrapped in an object
-      dispatch(postAdded(
-        // new post object accessed through action.payload
-        // id: nanoid(), // don't need this, as the prepare callback handles this automatically
-        title, 
-        content,
-        userId
-      ))
-      // reset form data
-      setTitle('');
-      setContent('');
+  const onSavePostClicked = async () => {
+    if (canSave) {
+      try {
+        setAddRequestStatus('pending')
+        await dispatch(addNewPost({ title, content, user: userId})).unwrap() // unwrap will either return a promise with the action.payload on a fulfilled action, or throws error on rejected action
+        setTitle('')
+        setContent('')
+        setUserId('')
+      } catch (err) {
+        console.error('Failed to save the post: ', err)
+      } finally {
+        setAddRequestStatus('idle')
+      }
     }
   }
 
-  const  canSave = Boolean(title) && Boolean(content) && Boolean(userId)
 
   const usersOptions = users.map(user => (
     <option key={user.id} value={user.id}>

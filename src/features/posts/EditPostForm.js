@@ -4,16 +4,13 @@
 import React, { useState } from 'react' // component state
 import { useDispatch, useSelector } from 'react-redux' // global state
 import { useHistory } from 'react-router-dom' // navigation
-
-import { postUpdated } from './postsSlice' // altering global state
+import { postUpdated, selectPostById } from './postsSlice' 
 
 export const EditPostForm = ({ match }) => {
   const { postId } = match.params // get id from url
 
   // find post based on id
-  const post = useSelector((state) =>
-    state.posts.find((post) => post.id === postId)
-  )
+  const post = useSelector(state => selectPostById(state, postId))
 
   const [title, setTitle] = useState(post.title) // initialize with post title
   const [content, setContent] = useState(post.content) // initialize with post content

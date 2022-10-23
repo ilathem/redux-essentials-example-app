@@ -7,17 +7,14 @@ import { Link } from 'react-router-dom'
 import { PostAuthor } from './PostAuthor'
 import { ReactionButtons } from './ReactionButtons'
 import { TimeAgo } from './TimeAgo'
+import { selectPostById } from './postsSlice'
 
 export const SinglePostPage = ({ match }) => {
   // get postId from url parameter
   const { postId } = match.params
 
   // using useSelector, get the post that matches with that id
-  const post = useSelector((state) =>
-    // since we know that state.posts is an array, we can use array.find() to
-    // find the exact array element we need
-    state.posts.find((post) => post.id === postId)
-  )
+  const post = useSelector(state => selectPostById(state, postId))
 
   // if no post exists
   if (!post) {
