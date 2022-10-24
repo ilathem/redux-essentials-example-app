@@ -19,3 +19,6 @@ This app will be a social media feed app to practice using redux in real-world s
     - `/app`
       - `Navbar.js`: renders the top header and nav content
       - `store.js`: creates the Redux store instance
+
+## Part 6: Performance and Normalizing Data
+- This part is about showcasing different techniques to optimize performance

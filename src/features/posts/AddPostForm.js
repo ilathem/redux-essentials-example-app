@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 // for creating new posts
 import { addNewPost } from './postsSlice'
+import { selectAllUsers } from '../users/usersSlice'
 
 export const AddPostForm = () => {
   const [title, setTitle] = useState('')
@@ -17,7 +18,7 @@ export const AddPostForm = () => {
   // use the hook so that we can modify redux state
   const dispatch = useDispatch()
 
-  const users = useSelector(state => state.users)
+  const users = useSelector(selectAllUsers)
 
   const onTitleChanged = (e) => setTitle(e.target.value)
   const onContentChanged = (e) => setContent(e.target.value)

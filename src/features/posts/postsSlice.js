@@ -7,26 +7,38 @@
 // to handle our posts data. Reducer functions need to have some initial data
 // included so that the Redux store has those values loaded when the app
 // starts up (for know, use an array of fake post objects)
-import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit'
+import {
+  createSlice,
+  nanoid,
+  createAsyncThunk,
+  createSelector,
+  createEntityAdapter,
+} from '@reduxjs/toolkit'
 // import { sub } from 'date-fns'
-import { client } from  '../../api/client'
+import { client } from '../../api/client'
 
-// define initial posts array data
-const initialState = {
-  posts: [],
+const postsAdapter = createEntityAdapter({ // for creating the posts entity
+  sortComparer: (a, b) => b.date.localeCompare(a.date) // default sorting behavior based on date (newer items first)
+})
+
+const initialState = postsAdapter.getInitialState({
   status: 'idle',
-  error: null
-}
+  error: null,
+})
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
   const response = await client.get('/fakeApi/posts')
   return response.data
 })
 
-export const addNewPost = createAsyncThunk('posts/addNewPost', async initialPost => { // The Payload creator received the partial {title, content, user} object
-  const response = await client.post('/fakeApi/posts', initialPost) // We send the initial data to  the fake API server
-  return response.data // The response includes the complete post object, including unique ID
-})
+export const addNewPost = createAsyncThunk(
+  'posts/addNewPost',
+  async (initialPost) => {
+    // The Payload creator received the partial {title, content, user} object
+    const response = await client.post('/fakeApi/posts', initialPost) // We send the initial data to  the fake API server
+    return response.data // The response includes the complete post object, including unique ID
+  }
+)
 
 // create a new redux slice for posts
 const postsSlice = createSlice({
@@ -86,7 +98,7 @@ const postsSlice = createSlice({
       // start by extracting the new post state out of the payload
       const { id, title, content } = action.payload
       // then, find the post that we need to update (based on id)
-      const existingPost = state.posts.find((post) => post.id === id)
+      const existingPost = state.entities[id]
       // if we can find the post, then update it mutably
       if (existingPost) {
         existingPost.title = title
@@ -95,7 +107,7 @@ const postsSlice = createSlice({
     },
     reactionAdded(state, action) {
       const { postId, reaction } = action.payload
-      const existingPost = state.posts.find((post) => post.id === postId)
+      const existingPost = state.entities[postId]
       if (existingPost) {
         existingPost.reactions[reaction]++
       }
@@ -107,17 +119,15 @@ const postsSlice = createSlice({
         state.status = 'loading'
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        state.status  = 'succeeded'
-        state.posts = state.posts.concat(action.payload) // add fetched posts to array
+        state.status = 'succeeded'
+        postsAdapter.upsertMany(state, action.payload) // use the 'upsertMany' reducer as a mutating update utility
       })
       .addCase(fetchPosts.rejected, (state, action) => {
-        state.status =  'failed'
+        state.status = 'failed'
         state.error = action.error.message
       })
-      .addCase(addNewPost.fulfilled, (state, action) => {
-        state.posts.push(action.payload) // We can  directly add the new post object to our posts array
-      })
-  }
+      .addCase(addNewPost.fulfilled, postsAdapter.addOne) // use the 'addOne' reducer for the fulfilled case
+  },
 })
 
 // create slice will automatically create an action from the reducer
@@ -126,8 +136,15 @@ export const { postAdded, postUpdated, reactionAdded } = postsSlice.actions
 // export the posts reducer that createSlice generated
 export default postsSlice.reducer
 
-// selector functions abstract the selection logic so that we can change the structure
-// without having to change all the components using the selector as well
-export const selectAllPosts = (state) => state.posts.posts
-export const selectPostById = (state, postId) =>
-  state.posts.posts.find((post) => post.id === postId)
+// export the customized selectors for this adapter using `getSelectors`
+export const { 
+  selectAll: selectAllPosts,
+  selectById: selectPostById,
+  selectIds: selectPostIds
+  // Pass in a selector that returns the posts slice of state
+} = postsAdapter.getSelectors(state => state.posts) // pass in a small selector to tell getSelectors where to look in state
+
+export const selectPostsByUser = createSelector(
+  [selectAllPosts, (state, userId) => userId],
+  (posts, userId) => posts.filter((post) => post.user === userId)
+)
