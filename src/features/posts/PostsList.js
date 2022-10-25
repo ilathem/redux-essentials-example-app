@@ -1,23 +1,14 @@
-/**
- * React component that shows the list of posts
- */
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-// import link to link an excerpt to an individual post page
-import { Link } from 'react-router-dom';
-import { PostAuthor } from './PostAuthor';
-import { ReactionButtons } from './ReactionButtons';
-import { TimeAgo } from './TimeAgo';
-import { 
-  selectAllPosts, 
-  fetchPosts,
-  selectPostIds,
-  selectPostById
-} from './postsSlice';
-import { Spinner } from '../../components/Spinner'
+import React, { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
-const PostExcerpt = ({ postId }) => {
-  const post = useSelector(state => selectPostById(state, postId))
+import { Spinner } from '../../components/Spinner'
+import { PostAuthor } from './PostAuthor'
+import { TimeAgo } from './TimeAgo'
+import { ReactionButtons } from './ReactionButtons'
+
+import { useGetPostsQuery } from '../api/apiSlice'
+
+const PostExcerpt = ({ post }) => {
   return (
     <article className="post-excerpt">
       <h3>{post.title}</h3>
@@ -35,32 +26,26 @@ const PostExcerpt = ({ postId }) => {
 }
 
 export const PostsList = () => {
-  const dispatch = useDispatch()
-  const orderedPostIds  = useSelector(selectPostIds)
-
-  const postStatus = useSelector(state => state.posts.status)
-  const error = useSelector(state => state.posts.error)
-
-  useEffect(() => {
-    if (postStatus === 'idle') {
-      dispatch(fetchPosts())
-    }
-  }, [postStatus, dispatch])
+  const {
+    data: posts,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetPostsQuery()
 
   let content
 
-  if (postStatus === 'loading') {
-    content = <Spinner text="Loading..." />
-  } else if (postStatus === 'succeeded') {
-    content = orderedPostIds.map(postId => (
-      <PostExcerpt key={postId} postId={postId} />
-    ))
-  } else if (postStatus === 'failed') {
-    content = <div>{error}</div>
-  }
+  content = isLoading ? (
+    <Spinner text="Loading..." />
+  ) : isSuccess ? (
+    posts.map((post) => <PostExcerpt key={post.id} post={post} />)
+  ) : isError ? (
+    <div>{error.toString()}</div>
+  ) : null
 
   return (
-    <section className='posts-list'>
+    <section className="posts-list">
       <h2>Posts</h2>
       {content}
     </section>

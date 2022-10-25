@@ -22,3 +22,8 @@ This app will be a social media feed app to practice using redux in real-world s
 
 ## Part 6: Performance and Normalizing Data
 - This part is about showcasing different techniques to optimize performance
+
+## Part 7: RTK Query Basics
+- RTK Query is a data fetching and caching solution designed fro Redux applications
+- There is a mindset change from "managing state" to "managing cached data" (https://redux.js.org/tutorials/essentials/part-7-rtk-query-basics#thinking-in-rtk-query-caching)
+- 
