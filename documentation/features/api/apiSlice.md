@@ -72,3 +72,5 @@ getPost: builder.query({
   - so you can use the same query hook multiple times, pass it different query parameters, and eaach result will be cached separately in the Redux store
   - each query paramter must be a single value
   - if you need to pass multiple values, wrap them in an object and RTK Query will perform a shallow stable comparison of the object fields to determine if a re-fetch of the
+- this is changed later to optimize cache keys for specific posts: https://redux.js.org/tutorials/essentials/part-8-rtk-query-advanced#invalidating-specific-items
+- 

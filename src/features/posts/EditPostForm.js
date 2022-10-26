@@ -2,32 +2,39 @@
  * form for editing a existing post
  */
 import React, { useState } from 'react' // component state
-import { useDispatch, useSelector } from 'react-redux' // global state
 import { useHistory } from 'react-router-dom' // navigation
-import { postUpdated, selectPostById } from './postsSlice' 
+
+import { Spinner } from '../../components/Spinner'
+import {
+  useGetPostQuery,
+  useEditPostMutation
+} from '../api/apiSlice'
+
 
 export const EditPostForm = ({ match }) => {
   const { postId } = match.params // get id from url
 
-  // find post based on id
-  const post = useSelector(state => selectPostById(state, postId))
-
+  const {
+    data: post
+  } = useGetPostQuery(postId)
+  const [
+    updatePost,
+    {
+      isLoading
+    }
+  ] = useEditPostMutation()
+  
   const [title, setTitle] = useState(post.title) // initialize with post title
   const [content, setContent] = useState(post.content) // initialize with post content
 
-  const dispatch = useDispatch() // for executing actions on global state
   const history = useHistory() // for navigating programmatically
 
   // event listeners
   const onTitleChanged = (e) => setTitle(e.target.value)
   const onContentChanged = (e) => setContent(e.target.value)
-  const onSavePostClicked = () => {
+  const onSavePostClicked = async() => {
     if (title && content) {
-      // if fields not null
-      // pass in new post object through postUpdated
-      // note: title and content are shorthand for title: title and content: content
-      dispatch(postUpdated({ id: postId, title, content }))
-      // navigate to new updated post listing
+      await updatePost({ id: postId, title, content})
       history.push(`/posts/${postId}`)
     }
   }

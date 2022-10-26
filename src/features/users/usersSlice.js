@@ -5,8 +5,27 @@ import {
   createSlice,
   createAsyncThunk,
   createEntityAdapter,
+  createSelector,
 } from '@reduxjs/toolkit'
+
+import { apiSlice } from '../api/apiSlice'
+
 import { client } from '../../api/client'
+
+export const selectUsersResult = apiSlice.endpoints.getUsers.select()
+
+const emptyUsers = []
+
+export const selectAllUsers = createSelector(
+  selectUsersResult,
+  usersResult => usersResult?.data ?? emptyUsers
+)
+
+export const selectUserById = createSelector(
+  selectAllUsers,
+  (state, userId) => userId,
+  (users, userId) => users.find(user => user.id === userId)
+)
 
 const usersAdaptor = createEntityAdapter()
 
@@ -35,5 +54,5 @@ const usersSlice = createSlice({
 
 export default usersSlice.reducer
 
-export const { selectAll: selectAllUsers, selectById: selectUserById } = 
-  usersAdaptor.getSelectors(state => state.users)
+// export const { selectAll: selectAllUsers, selectById: selectUserById } = 
+//   usersAdaptor.getSelectors(state => state.users)
