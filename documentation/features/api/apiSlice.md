@@ -43,6 +43,17 @@
 
   instead of the URL string itself in the `query` callback
 
+### `getPost`
+
+```js
+getPost: builder.query({
+  query: postId => `/posts/${postId}`
+})
+```
+
+- takes an argument `postId` which is the id of the post to retrieve, and uses that to construct the api url in the callback query
+- generates `useGetPostQuery`
+
 ## Exporting API Slices and Hooks
 
 - typically export the entire API slice because it contains several useful fields
@@ -54,3 +65,10 @@
     - `use` is at the start of any react hook
     - the name of the endpoint is capitalized
     - last part is either `Query` or `Mutation`
+
+## Caching
+
+- RTK Query creates a cache key for each unique endpoint/argument combination, and stores the results for each cache key separately
+  - so you can use the same query hook multiple times, pass it different query parameters, and eaach result will be cached separately in the Redux store
+  - each query paramter must be a single value
+  - if you need to pass multiple values, wrap them in an object and RTK Query will perform a shallow stable comparison of the object fields to determine if a re-fetch of the

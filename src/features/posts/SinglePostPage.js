@@ -2,43 +2,43 @@
  * Will map to /posts/post_id using react redux
  */
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
+
+import { Spinner } from '../../components/Spinner'
+import { useGetPostQuery } from '../api/apiSlice'
+
 import { PostAuthor } from './PostAuthor'
-import { ReactionButtons } from './ReactionButtons'
 import { TimeAgo } from './TimeAgo'
-import { selectPostById } from './postsSlice'
+import { ReactionButtons } from './ReactionButtons'
 
 export const SinglePostPage = ({ match }) => {
   // get postId from url parameter
   const { postId } = match.params
 
-  // using useSelector, get the post that matches with that id
-  const post = useSelector(state => selectPostById(state, postId))
+  const {
+    data: post,
+    isFetching,
+    isSuccess
+  } = useGetPostQuery(postId)
 
-  // if no post exists
-  if (!post) {
-    return (
-      <section>
-        <h2>Post not found!</h2>
-      </section>
-    )
-  }
+  let content = isFetching ? (
+    <Spinner text="Loading..." />
+  ) : isSuccess ? (
+    <article className="post">
+      <h2>{post.title}</h2>
+      <PostAuthor userId={post.user} />
+      <TimeAgo timestamp={post.date} />
+      <ReactionButtons post={post} />
+      <p className="post-content">{post.content}</p>
+      <Link to={`/editPost/${post.id}`} className="button">
+        Edit Post
+      </Link>
+    </article>
+  ) : null
 
-  // post does exist
-  // component will rerender every time the post changes from useSelector
   return (
     <section>
-      <article className="post">
-        <h2>{post.title}</h2>
-        <PostAuthor userId={post.user} />
-        <TimeAgo timestamp={post.date} />
-        <ReactionButtons post={post} />
-        <p className="post-content">{post.content}</p>
-        <Link to={`/editPost/${post.id}`} className="button">
-          Edit Post
-        </Link>
-      </article>
+      {content}
     </section>
   )
 }

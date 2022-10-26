@@ -2,44 +2,39 @@
  * React component for adding new posts
  */
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 
-// for modifying redux state
-import { useDispatch, useSelector } from 'react-redux'
-// for creating new posts
-import { addNewPost } from './postsSlice'
+import { Spinner } from '../../components/Spinner'
+import { useAddNewPostMutation } from '../api/apiSlice'
 import { selectAllUsers } from '../users/usersSlice'
 
 export const AddPostForm = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [userId, setUserId] = useState('')
-  const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
-  // use the hook so that we can modify redux state
-  const dispatch = useDispatch()
-
+  const [addNewPost, {
+    isLoading
+  }] = useAddNewPostMutation()
   const users = useSelector(selectAllUsers)
 
   const onTitleChanged = (e) => setTitle(e.target.value)
   const onContentChanged = (e) => setContent(e.target.value)
   const onAuthorChanged = (e) => setUserId(e.target.value)
   
-  const  canSave = 
-    [title, content, userId].every(Boolean) && addRequestStatus === 'idle'
+  const canSave = 
+    [title, content, userId].every(Boolean) && !isLoading
 
   const onSavePostClicked = async () => {
     if (canSave) {
       try {
-        setAddRequestStatus('pending')
-        await dispatch(addNewPost({ title, content, user: userId})).unwrap() // unwrap will either return a promise with the action.payload on a fulfilled action, or throws error on rejected action
+        await addNewPost({ title, content, user: userId }).unwrap()
         setTitle('')
         setContent('')
         setUserId('')
       } catch (err) {
         console.error('Failed to save the post: ', err)
-      } finally {
-        setAddRequestStatus('idle')
-      }
+      } 
     }
   }
 
